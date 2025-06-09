@@ -9,6 +9,7 @@ python -m venv venv
 venv\Scripts\activate
 # On Mac/Linux:
 source venv/bin/activate
+
 pip install -r requirements.txt
 
 - You also need to have Ollama installed in your system, since this needs llama3 for its LLM and RAG features
