@@ -4,6 +4,7 @@ This is a test github repository of our Daejeon Apartment Listing for Real Estat
 
 Some things to note for this code version:
 - You may need to do these code steps for initializing the virtual environment, since this uses venv:
+
 python -m venv venv
 # On Windows:
 venv\Scripts\activate
