@@ -73,6 +73,14 @@ try:
 except FileNotFoundError:
     st.info("Banner image not found. Place an image named 'logo.jpg'.")
 
+# Try to import LLM components, but handle properly if they fail
+try:
+    from llm_integration import LLMApartmentAssistant
+    LLM_AVAILABLE = True
+except ImportError as e:
+    st.warning("⚠️ LLM features not available in this environment. Using basic search only.")
+    LLM_AVAILABLE = False
+
 # Load data function
 @st.cache_data
 def load_apartment_data():
@@ -268,10 +276,23 @@ if 'df' not in st.session_state:
     st.session_state.df = load_apartment_data()
 
 if 'llm_assistant' not in st.session_state:
-    st.session_state.llm_assistant = LLMApartmentAssistant()
+    if LLM_AVAILABLE:
+        try:
+            st.session_state.llm_assistant = LLMApartmentAssistant()
+            st.session_state.llm_enabled = True
+        except Exception as e:
+            st.warning("⚠️ Could not initialize LLM features. Using basic search only.")
+            st.session_state.llm_assistant = None
+            st.session_state.llm_enabled = False
+    else:
+        st.session_state.llm_assistant = None
+        st.session_state.llm_enabled = False
 
 def should_use_llm(query):
     """Determine if a query needs LLM processing"""
+    if not st.session_state.get('llm_enabled', False):
+        return False
+    
     simple_patterns = [
         r'\d+,\d+', r'\d+㎡', 'under', 'over', 
         'between', 'cheapest', 'largest'
@@ -384,10 +405,10 @@ with tab1:
     # Process query
     if send_button and user_query:
         with st.spinner("Searching..."):
-            if should_use_llm(user_query):
+            if should_use_llm(user_query) and st.session_state.get('llm_enabled', False):
                 # LLM Path with images
                 llm_response, docs, relevant_images = st.session_state.llm_assistant.rag_query(user_query)
-        
+            
                 # Convert docs to DataFrame for compatibility with your UI
                 result_df = pd.DataFrame([doc.metadata for doc in docs])
                 response_parts = ["LLM-enhanced results"]
@@ -396,18 +417,18 @@ with tab1:
                 result_df, response_parts = process_natural_query(user_query, st.session_state.df)
                 llm_response = None
                 relevant_images = []
-    
+
             # Format using your existing UI system
             response = format_apartment_response(result_df, user_query, response_parts)
-    
+
             # Combine responses if LLM was used
             if llm_response:
                 response = f"{llm_response}\n\n---\n\n**Detailed Results:**\n\n{response}"
-    
+
             st.session_state.chat_history.append({
                 'query': user_query,
                 'response': response,
-                'images': relevant_images  # Store images with chat history
+                'images': relevant_images if 'relevant_images' in locals() else []
             })
             st.rerun()
     
