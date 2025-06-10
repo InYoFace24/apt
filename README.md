@@ -21,4 +21,4 @@ pip install -r requirements.txt
 - Although the dataset used doesn't include images, as it is mainly used because it is available for free and public use (while some dynamic datasets are not easily accesible), this code is able to display images if the dataset include them, so it 'should' be able to output images too.
 
 - Will be trying to deploy a version that is publicly online in a server, though it may exclude certain functionalities because of compatibility/efficiency reasons.
-  Update on deployment: was not able to due to venv making it virtualized envrionment that is helpful for local systems, will try maybe to see if this can be solved
+  Update on deployment: was not able to due to venv making it virtualized envrionment that is helpful for local systems (probably not the case) and the use of Ollama for LLM features rather than other API keys, will try maybe to see if this can be solved
